@@ -1,0 +1,117 @@
+{
+  "filePath": "sample1/main.bal",
+  "description": "Test adding a PostgreSQL MCP server",
+  "serviceInitModel": {
+    "id": "postgresql-mcp",
+    "displayName": "PostgreSQL MCP Server",
+    "description": "Create an MCP server backed by PostgreSQL",
+    "orgName": "ballerinax",
+    "packageName": "postgresql",
+    "moduleName": "postgresql.mcp",
+    "version": "1.19.0",
+    "type": "mcp-server",
+    "properties": {
+      "host": {
+        "value": "\"db.example.com\"",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "databasePort": {
+        "value": "5432",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "username": {
+        "value": "\"app_user\"",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "password": {
+        "value": "dbPassword",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "database": {
+        "value": "\"app\"",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "mcpPort": {
+        "value": "9090",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "path": {
+        "value": "\"/mcp\"",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      },
+      "readOnly": {
+        "value": "true",
+        "enabled": false,
+        "editable": false,
+        "optional": false,
+        "advanced": false
+      }
+    }
+  },
+  "output": {
+    "sample1/Ballerina.toml": [
+      {
+        "range": {
+          "start": {
+            "line": 4,
+            "character": 0
+          },
+          "end": {
+            "line": 4,
+            "character": 0
+          }
+        },
+        "newText": "[[dependency]]\norg = \"ballerinax\"\nname = \"postgresql\"\nversion = \"1.19.0\"\nrepository = \"local\"\n\n[[dependency]]\norg = \"ballerina\"\nname = \"mcp\"\nversion = \"1.1.1\"\nrepository = \"local\"\n\n"
+      }
+    ],
+    "sample1/main.bal": [
+      {
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 0
+          },
+          "end": {
+            "line": 0,
+            "character": 0
+          }
+        },
+        "newText": "import ballerinax/postgresql.mcp as pgmcp;\nimport ballerinax/postgresql.driver as _;\n"
+      },
+      {
+        "range": {
+          "start": {
+            "line": 57,
+            "character": 3
+          },
+          "end": {
+            "line": 57,
+            "character": 3
+          }
+        },
+        "newText": "\nlistener pgmcp:PostgresMcpListener postgresqlMcpListener = new (\n    {\n        host: \"db.example.com\",\n        port: 5432,\n        username: \"app_user\",\n        password: dbPassword,\n        database: \"app\"\n    },\n    {readOnly: true},\n    {port: 9090, path: \"/mcp\"}\n);\n"
+      }
+    ]
+  }
+}

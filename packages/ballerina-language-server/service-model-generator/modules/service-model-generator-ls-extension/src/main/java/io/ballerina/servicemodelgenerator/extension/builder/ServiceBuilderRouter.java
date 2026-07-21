@@ -37,6 +37,8 @@ import io.ballerina.servicemodelgenerator.extension.builder.service.McpServiceBu
 import io.ballerina.servicemodelgenerator.extension.builder.service.MssqlCdcServiceBuilder;
 import io.ballerina.servicemodelgenerator.extension.builder.service.MysqlCdcServiceBuilder;
 import io.ballerina.servicemodelgenerator.extension.builder.service.PostgresqlCdcServiceBuilder;
+import io.ballerina.servicemodelgenerator.extension.builder.service.PostgresqlMcpServiceBuilder;
+import io.ballerina.servicemodelgenerator.extension.builder.service.SlackMcpServiceBuilder;
 import io.ballerina.servicemodelgenerator.extension.builder.service.RabbitMQServiceBuilder;
 import io.ballerina.servicemodelgenerator.extension.builder.service.ShopifyTriggerServiceBuilder;
 import io.ballerina.servicemodelgenerator.extension.builder.service.SolaceServiceBuilder;
@@ -99,6 +101,8 @@ public class ServiceBuilderRouter {
         put(SOLACE, SolaceServiceBuilder::new);
         put(MSSQL, MssqlCdcServiceBuilder::new);
         put(POSTGRESQL, PostgresqlCdcServiceBuilder::new);
+        put("postgresql.mcp", PostgresqlMcpServiceBuilder::new);
+        put("slack.mcp", SlackMcpServiceBuilder::new);
         put(MYSQL, MysqlCdcServiceBuilder::new);
         put(FTP, FTPServiceBuilder::new);
         put(TRIGGER_GITHUB, GithubTriggerServiceBuilder::new);

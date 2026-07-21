@@ -1,0 +1,60 @@
+{
+  "id": "postgresql-mcp",
+  "displayName": "PostgreSQL MCP Server",
+  "description": "Create an MCP server backed by a PostgreSQL database",
+  "orgName": "ballerinax",
+  "packageName": "postgresql",
+  "moduleName": "postgresql.mcp",
+  "version": "1.19.0",
+  "type": "mcp-server",
+  "properties": {
+    "host": {
+      "metadata": {"label": "Host", "description": "PostgreSQL server hostname"},
+      "value": "\"localhost\"", "placeholder": "localhost",
+      "types": [{"fieldType": "TEXT", "ballerinaType": "string", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "string", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "databasePort": {
+      "metadata": {"label": "Database Port", "description": "PostgreSQL server port"},
+      "value": "5432", "placeholder": "5432",
+      "types": [{"fieldType": "NUMBER", "ballerinaType": "int", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "int", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "username": {
+      "metadata": {"label": "Username", "description": "Database username"},
+      "value": "\"postgres\"", "placeholder": "postgres",
+      "types": [{"fieldType": "TEXT", "ballerinaType": "string", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "string", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "password": {
+      "metadata": {"label": "Password", "description": "Database password or configurable expression"},
+      "value": "\"\"", "placeholder": "password",
+      "types": [{"fieldType": "TEXT", "ballerinaType": "string", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "string", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "database": {
+      "metadata": {"label": "Database", "description": "Database name"},
+      "value": "\"postgres\"", "placeholder": "postgres",
+      "types": [{"fieldType": "TEXT", "ballerinaType": "string", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "string", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "mcpPort": {
+      "metadata": {"label": "MCP Port", "description": "Port on which the MCP server listens"},
+      "value": "8080", "placeholder": "8080",
+      "types": [{"fieldType": "NUMBER", "ballerinaType": "int", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "int", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "path": {
+      "metadata": {"label": "Base Path", "description": "MCP server base path"},
+      "value": "\"/mcp\"", "placeholder": "/mcp",
+      "types": [{"fieldType": "TEXT", "ballerinaType": "string", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "string", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    },
+    "readOnly": {
+      "metadata": {"label": "Read Only", "description": "Restrict the MCP server to read-only database tools"},
+      "value": "true", "placeholder": "true",
+      "types": [{"fieldType": "BOOLEAN", "ballerinaType": "boolean", "selected": true}, {"fieldType": "EXPRESSION", "ballerinaType": "boolean", "selected": false}],
+      "enabled": true, "editable": true, "optional": false, "advanced": false
+    }
+  }
+}

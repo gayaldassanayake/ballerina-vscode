@@ -211,6 +211,7 @@ export function ServiceCreationView(props: ServiceCreationViewProps) {
     const [filePath, setFilePath] = useState<string>("");
     const [targetLineRange, setTargetLineRange] = useState<LineRange>();
     const [isSaving, setIsSaving] = useState<boolean>(false);
+    const [creationError, setCreationError] = useState<string>("");
     const [recordTypeFields, setRecordTypeFields] = useState<RecordTypeField[]>([]);
 
     const MAIN_BALLERINA_FILE = "main.bal";
@@ -522,6 +523,12 @@ export function ServiceCreationView(props: ServiceCreationViewProps) {
             .getServiceDesignerRpcClient()
             .createServiceAndListener({ filePath: "", serviceInitModel: updatedModel });
 
+        if (res.error) {
+            setCreationError(res.error);
+            setIsSaving(false);
+            return;
+        }
+
 
         const newArtifact = res.artifacts.find(res => res.isNew && model.moduleName === res.moduleName);
         if (newArtifact) {
@@ -579,6 +586,9 @@ export function ServiceCreationView(props: ServiceCreationViewProps) {
                                 {formFields && formFields.length > 0 && (
                                     <FormContainer>
                                         <FormHeader title={`Create ${model.displayName}`} />
+                                        {creationError && (
+                                            <StatusText variant="body2">{creationError}</StatusText>
+                                        )}
                                         {filePath && targetLineRange && (
                                             <ArtifactForm
                                                 fileName={filePath}

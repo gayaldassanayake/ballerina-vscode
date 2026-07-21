@@ -19,11 +19,9 @@
 import { Icon } from "@wso2/ui-toolkit";
 import { useRpcContext } from "@wso2/ballerina-rpc-client";
 import {
-    DIRECTORY_MAP,
     EVENT_TYPE,
     MACHINE_VIEW,
     SCOPE,
-    ServiceModel,
     TriggerModelsResponse,
 } from "@wso2/ballerina-core";
 
@@ -43,18 +41,11 @@ export function AIAgentPanel(props: AIAgentPanelProps) {
     const { rpcClient } = useRpcContext();
     const isDisabled = props.scope && props.scope !== SCOPE.AI_AGENT && props.scope !== SCOPE.ANY;
 
-    const handleMcpClick = async (key: DIRECTORY_MAP, model: ServiceModel) => {
-        console.log(">>>>> Model: ", model);
+    const handleMcpClick = async () => {
         await rpcClient.getVisualizerRpcClient().openView({
             type: EVENT_TYPE.OPEN_VIEW,
             location: {
-                view: MACHINE_VIEW.BIServiceWizard,
-                artifactInfo: {
-                    org: model.orgName,
-                    packageName: model.packageName,
-                    moduleName: model.moduleName,
-                    version: model.version,
-                },
+                view: MACHINE_VIEW.BIMcpServiceChooser,
             },
         });
     };
@@ -94,7 +85,7 @@ export function AIAgentPanel(props: AIAgentPanelProps) {
                                 title={item.name}
                                 icon={getEntryNodeIcon(item)}
                                 onClick={() => {
-                                    handleMcpClick(DIRECTORY_MAP.SERVICE, item);
+                                    handleMcpClick();
                                 }}
                                 disabled={isDisabled}
                                 tooltip={isDisabled ? OutOfScopeComponentTooltip : ""}

@@ -602,6 +602,12 @@ const MainPanel = () => {
                             );
                             break;
                         }
+                        case MACHINE_VIEW.BIMcpServiceChooser: {
+                            const { McpServiceCreationView } = await import("./views/BI/ServiceDesigner/McpServiceCreationView");
+                            if (isStaleNavigation()) return;
+                            setViewComponent(<McpServiceCreationView projectPath={value.projectPath} />);
+                            break;
+                        }
                         case MACHINE_VIEW.BIServiceClassDesigner: {
                             const { ServiceClassDesigner } = await import("./views/BI/ServiceClassEditor/ServiceClassDesigner");
                             if (isStaleNavigation()) return;

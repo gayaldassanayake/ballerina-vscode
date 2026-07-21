@@ -479,7 +479,12 @@ export class ServiceDesignerRpcManager implements ServiceDesignerAPI {
                 }
                 const res: SourceEditResponse = await context.langClient.createServiceAndListener(params);
 
-                const edits = { textEdits: res.textEdits, resolveMissingDependencies: false };
+                if (res.errorMsg) {
+                    resolve({ artifacts: [], error: res.errorMsg });
+                    return;
+                }
+
+                const edits = { textEdits: res.textEdits, resolveMissingDependencies: true };
 
                 const artifacts = await updateSourceCode({ ...edits, artifactData: { artifactType: DIRECTORY_MAP.SERVICE }, description: 'Service and Listener Creation' });
                 let result: UpdatedArtifactsResponse = {
