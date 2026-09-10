@@ -115,6 +115,20 @@ function resolveBallerinaVsixPath() {
   return files[0].fullPath;
 }
 
+// Mirrors ensureMacElectronSymlink in e2e-playwright-tests/utils/helpers/setup.ts:
+// the cached macOS test VS Code build's Contents/MacOS/Electron entry can end up
+// missing (the zip-unpack step doesn't always preserve it), which this library's
+// CLI invocations (--install-extension, version check, etc.) require on darwin.
+function ensureMacElectronSymlink() {
+  if (process.platform !== 'darwin') return;
+  const macOSDir = path.join(resourcesFolder, 'Visual Studio Code.app', 'Contents', 'MacOS');
+  const codeBinary = path.join(macOSDir, 'Code');
+  const electronBinary = path.join(macOSDir, 'Electron');
+  if (fs.existsSync(codeBinary) && !fs.existsSync(electronBinary)) {
+    fs.symlinkSync('Code', electronBinary);
+  }
+}
+
 async function prepareExtensionsForLaunch(profileName) {
   fs.mkdirSync(extensionsWorkRoot, { recursive: true });
   fs.mkdirSync(marketplaceExtensionsFolder, { recursive: true });
@@ -152,6 +166,7 @@ process.env.TEST_RESOURCES = launchStorageRoot;
 
 async function launchIDE() {
   resetAuthoringDataFolder();
+  ensureMacElectronSymlink();
   // MacOS rejects socket paths over 104 bytes with EINVAL.
   const profileName = `bi-a-${sessionName}-${process.pid}`;
   const launchExtensionsFolder = await prepareExtensionsForLaunch(profileName);
