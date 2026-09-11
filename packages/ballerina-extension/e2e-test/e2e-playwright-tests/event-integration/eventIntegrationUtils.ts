@@ -81,21 +81,36 @@ export async function addEventHandler(webView: Frame, page: Page, displayName: s
 
     const functionName = displayName.charAt(0).toLowerCase() + displayName.slice(1).replace(/\s+/g, '');
     const definePanel = webView.locator('[data-testid="side-panel"]');
-    // Polls in small increments (up to ~22s total) rather than a single long
-    // isVisible() wait — confirmed live this catches a panel that takes a
-    // couple of seconds to render (RabbitMQ, MQTT) without over-waiting when
-    // no panel is coming at all (RabbitMQ's onError). Logged because this
-    // exact detection previously misfired twice under machine load; the
-    // trail is cheap and has already been useful for debugging.
-    let panelAppeared = false;
-    for (let i = 0; i < 15; i++) {
-        panelAppeared = await definePanel.isVisible({ timeout: 500 }).catch(() => false);
-        if (panelAppeared) break;
-        await page.waitForTimeout(1500);
-    }
-    console.log(`[addEventHandler] ${displayName}: panel appeared=${panelAppeared}`);
+    const titleBarContainer = webView.locator('[data-testid="title-bar-container"]');
+    const directHandlerText = webView.getByText(functionName, { exact: true }).first();
 
-    if (panelAppeared) {
+    // Panel *presence* alone isn't a reliable signal: some handlers open a
+    // persistent side panel needing configuration + Save (RabbitMQ/MQTT
+    // onMessage); some add the handler directly with no panel at all
+    // (RabbitMQ onError); and some briefly flash the panel before closing it
+    // themselves because nothing actually needs configuring — confirmed live
+    // for Azure Service Bus's onMessage, despite having a DATA_BINDING-shaped
+    // parameter that looked like it would need the same flow as RabbitMQ's.
+    // A single "did it ever appear" check misclassified that flash as a real
+    // panel and then hung waiting for a Save button that was never coming.
+    // Instead, race two outcomes each poll tick: the handler already showing
+    // up as added, or the panel still being visible a moment after first
+    // spotted (i.e. it settled rather than flashed).
+    let panelSettled = false;
+    for (let i = 0; i < 15; i++) {
+        if (await directHandlerText.isVisible({ timeout: 500 }).catch(() => false)) {
+            break;
+        }
+        if (await definePanel.isVisible({ timeout: 500 }).catch(() => false)) {
+            await page.waitForTimeout(500);
+            panelSettled = await definePanel.isVisible({ timeout: 500 }).catch(() => false);
+            if (panelSettled) break;
+        }
+        await page.waitForTimeout(1000);
+    }
+    console.log(`[addEventHandler] ${displayName}: panelSettled=${panelSettled}`);
+
+    if (panelSettled) {
         const defineConfigLink = definePanel.getByText('Define Message Configuration', { exact: true });
         if (await defineConfigLink.isVisible({ timeout: 10000 }).catch(() => false)) {
             await defineConfigLink.click({ force: true });
@@ -109,11 +124,9 @@ export async function addEventHandler(webView: Frame, page: Page, displayName: s
         await saveBtn.first().waitFor({ state: 'visible', timeout: 20000 });
         await saveBtn.first().click({ force: true });
 
-        const titleBarContainer = webView.locator('[data-testid="title-bar-container"]');
         await titleBarContainer.getByText(functionName, { exact: true }).first()
             .waitFor({ state: 'visible', timeout: 30000 });
     } else {
-        await webView.getByText(functionName, { exact: true }).first()
-            .waitFor({ state: 'visible', timeout: 20000 });
+        await directHandlerText.waitFor({ state: 'visible', timeout: 20000 });
     }
 }
