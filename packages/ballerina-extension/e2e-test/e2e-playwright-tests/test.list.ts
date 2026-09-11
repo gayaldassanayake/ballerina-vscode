@@ -61,6 +61,7 @@ import azureIntegration from './event-integration/azure.spec';
 import salesforceIntegration from './event-integration/salesforce.spec';
 import twillioIntegration from './event-integration/twillio.spec';
 import githubIntegration from './event-integration/github.spec';
+import solaceIntegration from './event-integration/solace.spec';
 
 import ftpIntegration from './file-integration/ftp.spec';
 import directoryIntegration from './file-integration/directory.spec';
@@ -199,6 +200,7 @@ test.describe('Ballerina E2E Group 4', { tag: '@group4' }, async () => {
     // <----Event Integration Test---->
     test.describe(githubIntegration);
     test.describe(azureIntegration);
+    test.describe(solaceIntegration);
 
     // <----Other Artifacts Test---->
     test.describe(typeTest);
