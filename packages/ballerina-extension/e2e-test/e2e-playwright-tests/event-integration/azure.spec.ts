@@ -21,6 +21,15 @@ import { confirmSaveChangesAndGoBack, createArtifactAndGetWebview, deleteArtifac
 import { Form } from '@wso2/playwright-vscode-tester';
 import { ProjectExplorer } from '../utils/pages';
 import { DEFAULT_PROJECT_NAME } from '../utils/helpers/constants';
+import { addEventHandler } from './eventIntegrationUtils';
+
+// UNVERIFIED against a live VS Code instance — written from the static
+// trigger model (asb.json: onMessage/onError schemaFunctions) and the
+// addEventHandler() helper already proven live for RabbitMQ and MQTT on
+// this branch. A machine-level VS Code launch hang blocked live
+// verification for this trigger specifically; see the commit message for
+// details. Only additive (two new tests) — the pre-existing Create/Editing/
+// Delete tests are untouched.
 
 export default function createTests() {
     test.describe.serial('Azure Integration Tests', {
@@ -125,6 +134,25 @@ export default function createTests() {
 
             const asbListener = `asbListener`;
             await artifactWebView.locator(`text=${asbListener}`).waitFor({ state: 'visible' });
+        });
+
+        test('Add onMessage Handler', async ({ }, testInfo) => {
+            const testAttempt = testInfo.retry + 1;
+            console.log('Adding onMessage handler in test attempt: ', testAttempt);
+
+            const artifactWebView = await getWebview(BI_INTEGRATOR_LABEL, page);
+            await addEventHandler(artifactWebView, page.page, 'On Message');
+        });
+
+        // onMessage/onError are independently addable on ASB (neither is
+        // "repeatable": "FALSE" grouped with the other, per asb.json), unlike
+        // RabbitMQ's onMessage/onRequest — so both can coexist on one service.
+        test('Add onError Handler', async ({ }, testInfo) => {
+            const testAttempt = testInfo.retry + 1;
+            console.log('Adding onError handler in test attempt: ', testAttempt);
+
+            const artifactWebView = await getWebview(BI_INTEGRATOR_LABEL, page);
+            await addEventHandler(artifactWebView, page.page, 'On Error');
         });
 
         test('Delete Azure Integration', async ({ }, testInfo) => {
