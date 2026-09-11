@@ -16,12 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import fs from 'fs';
+import path from 'path';
 import { test } from '@playwright/test';
-import { confirmSaveChangesAndGoBack, createArtifactAndGetWebview, deleteArtifactFromTree, domClick, getWebview, BI_INTEGRATOR_LABEL, initTest, page } from '../utils/helpers';
+import { confirmSaveChangesAndGoBack, createArtifactAndGetWebview, deleteArtifactFromTree, domClick, getWebview, BI_INTEGRATOR_LABEL, initTest, newProjectPath, page } from '../utils/helpers';
 import { Form } from '@wso2/playwright-vscode-tester';
 import { ProjectExplorer } from '../utils/pages';
 import { DEFAULT_PROJECT_NAME } from '../utils/helpers/constants';
+import { addEventHandler } from './eventIntegrationUtils';
 
+// Unlike RabbitMQ, MQTT's create-service form never offers a "Use existing
+// listener" choice on this branch — confirmed live: even with a listener
+// already in the project, the form always asks for a fresh
+// serverUri/clientId/subscriptions (Advanced Configurations only exposes the
+// new listener's name, never an existing-listener picker). A second service
+// would also be indistinguishable from the first in the project tree — both
+// render as the identical label "MQTT Event Integration" with no
+// queue/topic-style suffix — which would make the existing Delete test's
+// tree lookup ambiguous. So this only covers the one listener-creation path
+// that actually exists in the UI, plus the handler-add flow this file didn't
+// test before.
 export default function createTests() {
     test.describe.serial('MQTT Integration Tests', {
     }, async () => {
@@ -31,6 +45,13 @@ export default function createTests() {
             console.log('Creating a new service in test attempt: ', testAttempt);
 
             const artifactWebView = await createArtifactAndGetWebview('MQTT Integration', 'trigger-mqtt');
+
+            const expandBtn = artifactWebView.getByText('Expand', { exact: true }).first();
+            await expandBtn.click({ force: true });
+            await page.page.waitForTimeout(500);
+            const listenerName = `orderMqttListener`;
+            await artifactWebView.locator('vscode-text-field[name="listenerVarName"]').locator('input').fill(listenerName);
+
             const form = new Form(page.page, BI_INTEGRATOR_LABEL, artifactWebView);
             await form.switchToFormView(false, artifactWebView);
             await form.fill({
@@ -45,12 +66,12 @@ export default function createTests() {
                     },
                     'clientId': {
                         type: 'cmEditor',
-                        value: `clientId${testAttempt}`,
+                        value: `orderClient${testAttempt}`,
                         additionalProps: { switchMode: 'primary-mode' }
                     },
                     'subscriptions': {
                         type: 'cmEditor',
-                        value: `testTopic`,
+                        value: `order/topic`,
                         additionalProps: { switchMode: 'primary-mode' }
                     }
                 }
@@ -62,9 +83,20 @@ export default function createTests() {
 
             const projectExplorer = new ProjectExplorer(page.page);
             await projectExplorer.findItem([DEFAULT_PROJECT_NAME, `MQTT Event Integration`]);
+            await artifactWebView.locator(`text=${listenerName}`).waitFor();
 
-            const mqttListener = `mqttListener`;
-            await artifactWebView.locator(`text=${mqttListener}`).waitFor();
+            const mainBal = fs.readFileSync(path.join(newProjectPath, 'main.bal'), 'utf8');
+            if (!mainBal.includes(listenerName) || !mainBal.includes('order/topic')) {
+                throw new Error(`Listener config not found in generated source:\n${mainBal}`);
+            }
+        });
+
+        test('Add onMessage Handler', async ({ }, testInfo) => {
+            const testAttempt = testInfo.retry + 1;
+            console.log('Adding onMessage handler in test attempt: ', testAttempt);
+
+            const artifactWebView = await getWebview(BI_INTEGRATOR_LABEL, page);
+            await addEventHandler(artifactWebView, page.page, 'On Message');
         });
 
         test('Editing MQTT Integration', async ({ }, testInfo) => {
