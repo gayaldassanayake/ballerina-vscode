@@ -65,6 +65,7 @@ import solaceIntegration from './event-integration/solace.spec';
 import solaceJmsIntegration from './event-integration/solace.jms.spec';
 import sqsIntegration from './event-integration/sqs.spec';
 import mysqlCdcIntegration from './event-integration/mysql-cdc.spec';
+import postgresqlCdcIntegration from './event-integration/postgresql-cdc.spec';
 
 import ftpIntegration from './file-integration/ftp.spec';
 import directoryIntegration from './file-integration/directory.spec';
@@ -207,6 +208,7 @@ test.describe('Ballerina E2E Group 4', { tag: '@group4' }, async () => {
     test.describe(solaceJmsIntegration);
     test.describe(sqsIntegration);
     test.describe(mysqlCdcIntegration);
+    test.describe(postgresqlCdcIntegration);
 
     // <----Other Artifacts Test---->
     test.describe(typeTest);
