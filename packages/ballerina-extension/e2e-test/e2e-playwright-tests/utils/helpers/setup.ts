@@ -242,6 +242,14 @@ export function executeBallPullCommand(modules: string[] = ['ballerina/task:2.7.
  * `@wso2/playwright-vscode-tester`'s zip-unpack step doesn't always preserve that symlink,
  * which the library's CLI invocations (--install-extension, version check, etc.) require on
  * darwin. Re-link it from the adjacent `Code` binary rather than re-downloading ~250MB.
+ *
+ * Adding that symlink invalidates the app bundle's code signature (a new, unsigned entry
+ * appears under Contents/MacOS) — `codesign --verify` then reports "a sealed resource is
+ * missing or invalid". Left unsigned, repeated CLI invocations against the bundle (each
+ * --install-extension, --version, etc.) become much more likely to hang indefinitely at
+ * `_dyld_start`, before the process ever reaches main() — confirmed live: the hang rate on
+ * this exact bundle dropped from roughly one-in-two launches to none after ad-hoc
+ * re-signing. Re-sign immediately after symlinking so the seal stays internally consistent.
  */
 function ensureMacElectronSymlink(): void {
     if (process.platform !== 'darwin') return;
@@ -250,6 +258,12 @@ function ensureMacElectronSymlink(): void {
     const electronBinary = path.join(macOSDir, 'Electron');
     if (fs.existsSync(codeBinary) && !fs.existsSync(electronBinary)) {
         fs.symlinkSync('Code', electronBinary);
+        const appBundle = path.join(resourcesFolder, 'Visual Studio Code.app');
+        try {
+            execFileSync('codesign', ['--force', '--deep', '--sign', '-', appBundle], { stdio: 'pipe' });
+        } catch (error: any) {
+            console.warn(`  ⚠️  Failed to re-sign VS Code.app after symlinking Electron: ${error.message}`);
+        }
     }
 }
 

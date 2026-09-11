@@ -11,7 +11,7 @@ import http from 'http';
 import https from 'https';
 import path from 'path';
 import vm from 'vm';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
@@ -119,6 +119,12 @@ function resolveBallerinaVsixPath() {
 // the cached macOS test VS Code build's Contents/MacOS/Electron entry can end up
 // missing (the zip-unpack step doesn't always preserve it), which this library's
 // CLI invocations (--install-extension, version check, etc.) require on darwin.
+// Symlinking Electron -> Code invalidates the app bundle's code signature,
+// which makes the bundle's CLI invocations much more prone to hanging
+// indefinitely at _dyld_start (confirmed live: re-signing dropped the hang
+// rate on this exact bundle from roughly one-in-two launches to none) — see
+// the fuller explanation on ensureMacElectronSymlink in
+// e2e-playwright-tests/utils/helpers/setup.ts. Re-sign right after linking.
 function ensureMacElectronSymlink() {
   if (process.platform !== 'darwin') return;
   const macOSDir = path.join(resourcesFolder, 'Visual Studio Code.app', 'Contents', 'MacOS');
@@ -126,6 +132,12 @@ function ensureMacElectronSymlink() {
   const electronBinary = path.join(macOSDir, 'Electron');
   if (fs.existsSync(codeBinary) && !fs.existsSync(electronBinary)) {
     fs.symlinkSync('Code', electronBinary);
+    const appBundle = path.join(resourcesFolder, 'Visual Studio Code.app');
+    try {
+      execFileSync('codesign', ['--force', '--deep', '--sign', '-', appBundle], { stdio: 'pipe' });
+    } catch (error) {
+      console.warn(`  Failed to re-sign VS Code.app after symlinking Electron: ${error.message}`);
+    }
   }
 }
 
