@@ -67,6 +67,7 @@ import sqsIntegration from './event-integration/sqs.spec';
 import mysqlCdcIntegration from './event-integration/mysql-cdc.spec';
 import postgresqlCdcIntegration from './event-integration/postgresql-cdc.spec';
 import mssqlCdcIntegration from './event-integration/mssql-cdc.spec';
+import oracledbCdcIntegration from './event-integration/oracledb-cdc.spec';
 
 import ftpIntegration from './file-integration/ftp.spec';
 import directoryIntegration from './file-integration/directory.spec';
@@ -211,6 +212,7 @@ test.describe('Ballerina E2E Group 4', { tag: '@group4' }, async () => {
     test.describe(mysqlCdcIntegration);
     test.describe(postgresqlCdcIntegration);
     test.describe(mssqlCdcIntegration);
+    test.describe(oracledbCdcIntegration);
 
     // <----Other Artifacts Test---->
     test.describe(typeTest);
